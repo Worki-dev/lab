@@ -1,0 +1,26 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import welch
+import mne
+
+# Load the EDF file
+file_path = 'S001R02.edf'
+raw_data = mne.io.read_raw_edf(file_path, preload=True)
+
+# Extract the Fp1 signal
+ecg_signal = raw_data.get_data(picks=['Fp1'])[0]  # Extract Fp1 data
+
+# Sampling frequency
+Fs = 160
+
+# Calculate Power Spectral Density using Welch's method
+f_welch, pxx = welch(ecg_signal, fs=Fs, nperseg=1024)
+
+# Plot the Power Spectral Density
+plt.figure(figsize=(8, 6))
+plt.plot(f_welch, 10 * np.log10(pxx))  # Convert to dB/Hz
+plt.title('Power Spectral Density of EEG Signal (Fp1)')
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Power/Frequency (dB/Hz)')
+plt.grid(True)
+plt.show()
