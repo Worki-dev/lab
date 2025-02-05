@@ -1,0 +1,65 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import butter, filtfilt
+import mne
+
+# Load the EDF file
+file_path = 'S001R02.edf'
+raw_data = mne.io.read_raw_edf(file_path, preload=True)
+
+# Extract the Fp1 signal (assuming it's available in the dataset)
+ecg_signal = raw_data.get_data(picks=['Fp1'])[0]  # Extract Fp1 data
+
+# Sampling frequency and filter parameters
+Fs = 160
+order = 4
+
+# Define time vector
+t = np.arange(len(ecg_signal)) / Fs
+
+# Bandpass filters for different frequency bands
+# Delta (0.5 - 4 Hz)
+b_delta, a_delta = butter(order, [0.5, 4] / (Fs / 2), btype='bandpass')
+delta_wave = filtfilt(b_delta, a_delta, ecg_signal)
+
+# Theta (4 - 8 Hz)
+b_theta, a_theta = butter(order, [4, 8] / (Fs / 2), btype='bandpass')
+theta_wave = filtfilt(b_theta, a_theta, ecg_signal)
+
+# Alpha (8 - 12 Hz)
+b_alpha, a_alpha = butter(order, [8, 12] / (Fs / 2), btype='bandpass')
+alpha_wave = filtfilt(b_alpha, a_alpha, ecg_signal)
+
+# Beta (12 - 30 Hz)
+b_beta, a_beta = butter(order, [12, 30] / (Fs / 2), btype='bandpass')
+beta_wave = filtfilt(b_beta, a_beta, ecg_signal)
+
+# Plot the filtered waves
+plt.figure(figsize=(10, 8))
+
+plt.subplot(4, 1, 1)
+plt.plot(t, delta_wave)
+plt.title('Delta Wave (0.5 - 4 Hz)')
+plt.xlabel('Time (s)')
+plt.ylabel('Amplitude')
+
+plt.subplot(4, 1, 2)
+plt.plot(t, theta_wave)
+plt.title('Theta Wave (4 - 8 Hz)')
+plt.xlabel('Time (s)')
+plt.ylabel('Amplitude')
+
+plt.subplot(4, 1, 3)
+plt.plot(t, alpha_wave)
+plt.title('Alpha Wave (8 - 12 Hz)')
+plt.xlabel('Time (s)')
+plt.ylabel('Amplitude')
+
+plt.subplot(4, 1, 4)
+plt.plot(t, beta_wave)
+plt.title('Beta Wave (12 - 30 Hz)')
+plt.xlabel('Time (s)')
+plt.ylabel('Amplitude')
+
+plt.tight_layout()
+plt.show()
