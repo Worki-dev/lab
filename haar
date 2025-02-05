@@ -1,0 +1,48 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+import pywt
+
+# Read images
+i1 = cv2.imread('i_2.jpg', cv2.IMREAD_GRAYSCALE)
+i2 = cv2.imread('i_1.jpg', cv2.IMREAD_GRAYSCALE)
+
+# Display images
+plt.subplot(1, 3, 1)
+plt.imshow(i1, cmap='gray')
+plt.title('Source Image 1')
+
+plt.subplot(1, 3, 2)
+plt.imshow(i2, cmap='gray')
+plt.title('Source Image 2')
+
+# Perform 2D Discrete Wavelet Transform (DWT) using Haar
+coeffs1 = pywt.dwt2(i1, 'haar')
+coeffs2 = pywt.dwt2(i2, 'haar')
+
+# Get the wavelet coefficients (LL, LH, HL, HH)
+LL1, (LH1, HL1, HH1) = coeffs1
+LL2, (LH2, HL2, HH2) = coeffs2
+
+# Apply max fusion rule (take max of corresponding coefficients)
+LL_fused = np.maximum(LL1, LL2)
+LH_fused = np.maximum(LH1, LH2)
+HL_fused = np.maximum(HL1, HL2)
+HH_fused = np.maximum(HH1, HH2)
+
+# Perform inverse DWT to get the fused image
+fused_image = pywt.idwt2((LL_fused, (LH_fused, HL_fused, HH_fused)), 'haar')
+
+# Display fused image
+plt.subplot(1, 3, 3)
+plt.imshow(fused_image, cmap='gray')
+plt.title('DWT Max Fusion Rule')
+
+# Calculate PSNR
+psnr_1 = cv2.PSNR(i1, fused_image)
+psnr_2 = cv2.PSNR(i2, fused_image)
+
+print(f'PSNR wrt Source Image 1 is: {psnr_1:.4f}')
+print(f'PSNR wrt Source Image 2 is: {psnr_2:.4f}')
+
+plt.show()
